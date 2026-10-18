@@ -146,7 +146,7 @@ function layout(){
     });
   });
 }
-function shuffle(){S.letters.forEach(L=>{L.vx+=(Math.random()-0.5)*22;L.vy+=(Math.random()-0.5)*22;L.vr+=(Math.random()-0.5)*0.3;});}
+function shuffle(){S.letters.forEach(L=>{const a=Math.random()*Math.PI*2,d=S.size*(0.8+Math.random()*1.6);L.x+=Math.cos(a)*d;L.y+=Math.sin(a)*d;L.vx+=(Math.random()-0.5)*10;L.vy+=(Math.random()-0.5)*10;L.vr+=(Math.random()-0.5)*0.5;});}
 
 /* ---------- physics ---------- */
 function step(){
