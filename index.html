@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Typo Mo — Kinetic Typography Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f4f5; --ink:#111; --muted:#888; --card:#fff; --line:#e4e4e7; --accent:#111;
+}
+[data-theme="black"]{ --bg:#0a0a0b; --ink:#f4f4f5; --muted:#71717a; --card:#18181b; --line:#27272a; --accent:#f4f4f5; }
+[data-theme="white"]{ --bg:#ffffff; --ink:#111; --muted:#a1a1aa; --card:#fafafa; --line:#e4e4e7; --accent:#111; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:'Noto Sans TC',sans-serif;transition:background .3s,color .3s}
+#stage{position:fixed;inset:0;cursor:crosshair}
+#topbar{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;z-index:10;pointer-events:none}
+#topbar .brand{font-family:'Dela Gothic One',sans-serif;font-size:20px;letter-spacing:.5px;pointer-events:auto}
+#topbar .controls{display:flex;gap:8px;pointer-events:auto}
+.iconbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:transform .15s}
+.iconbtn:active{transform:scale(.92)}
+#fab{position:fixed;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;background:var(--ink);color:var(--bg);border:none;font-size:22px;cursor:pointer;z-index:20;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .15s}
+#fab:active{transform:scale(.92)}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:18px 20px 28px;transform:translateY(110%);transition:transform .3s cubic-bezier(.32,.72,.35,1);max-height:75vh;overflow-y:auto}
+#sheet.open{transform:translateY(0)}
+#sheet h3{font-family:'Dela Gothic One',sans-serif;font-size:15px;margin:14px 0 8px}
+#sheet h3:first-child{margin-top:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{padding:8px 14px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:13px;cursor:pointer;font-family:inherit}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+input[type=text]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:16px;font-family:inherit;outline:none}
+input[type=range]{width:100%;accent-color:var(--ink)}
+.lbl{font-size:12px;color:var(--muted);margin:10px 0 4px;display:flex;justify-content:space-between}
+#hint{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--muted);z-index:5;pointer-events:none;white-space:nowrap;opacity:.9}
+#mask{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25;opacity:0;pointer-events:none;transition:opacity .3s}
+#mask.on{opacity:1;pointer-events:auto}
+.kbd{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.8}
+@media(max-width:600px){ #hint{display:none} }
+</style>
+</head>
+<body data-theme="silver">
+<canvas id="stage"></canvas>
+<div id="topbar">
+  <div class="brand">Typo Mo</div>
+  <div class="controls">
+    <button class="iconbtn" id="langBtn" title="EN/繁中">文</button>
+    <button class="iconbtn" id="themeBtn" title="theme">◐</button>
+  </div>
+</div>
+<div id="hint" data-en="move your cursor — the type reacts · tap ⚙ to edit" data-zh="郁個游標啲字識郁 · 撳 ⚙ 改字">move your cursor — the type reacts · tap ⚙ to edit</div>
+<button id="fab">⚙</button>
+<div id="mask"></div>
+<div id="sheet">
+  <h3 data-en="Text" data-zh="文字">Text</h3>
+  <input type="text" id="txtInput" value="TYPO MO" maxlength="24" placeholder="Type something…">
+  <h3 data-en="Behaviour" data-zh="郁法">Behaviour</h3>
+  <div class="row" id="modeRow">
+    <button class="chip on" data-mode="pressure" data-en="Pressure" data-zh="壓感">Pressure</button>
+    <button class="chip" data-mode="repel" data-en="Repel" data-zh="排斥">Repel</button>
+    <button class="chip" data-mode="gravity" data-en="Gravity" data-zh="重力">Gravity</button>
+    <button class="chip" data-mode="wave" data-en="Wave" data-zh="波浪">Wave</button>
+  </div>
+  <div class="lbl"><span data-en="Force" data-zh="力度">Force</span><span id="forceVal">1.0</span></div>
+  <input type="range" id="force" min="0" max="2" step="0.1" value="1">
+  <div class="lbl"><span data-en="Size" data-zh="字體大細">Size</span><span id="sizeVal">120</span></div>
+  <input type="range" id="size" min="40" max="220" step="2" value="120">
+  <h3 data-en="Export" data-zh="匯出">Export</h3>
+  <div class="row">
+    <button class="chip" id="pngBtn">PNG ↓</button>
+    <button class="chip" id="shuffleBtn" data-en="Shuffle pose" data-zh="隨機姿態">Shuffle pose</button>
+  </div>
+  <div class="kbd" data-en="Tip: move slowly near the type for the pressure effect. Double-tap the canvas to shuffle." data-zh="貼士：喺字附近慢慢郁，壓感最明顯。雙擊畫布隨機姿態。">Tip: move slowly near the type for the pressure effect. Double-tap the canvas to shuffle.</div>
+</div>
+<script>
+(()=>{
+"use strict";
+const cv=document.getElementById('stage'),ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);layout();}
+addEventListener('resize',resize);
+
+/* ---------- state ---------- */
+const S={text:'TYPO MO',mode:'pressure',force:1,size:120,lang:'en',theme:'silver',
+  mouse:{x:-9999,y:-9999,down:false},letters:[],t:0};
+const THEMES=['silver','white','black'];
+
+/* ---------- letters ---------- */
+function layout(){
+  ctx.font=`400 ${S.size}px 'Dela Gothic One',sans-serif`;
+  const chars=[...S.text];if(!chars.length)return;
+  const widths=chars.map(c=>ctx.measureText(c).width);
+  const gap=S.size*0.08;
+  const total=widths.reduce((a,b)=>a+b,0)+gap*(chars.length-1);
+  let x=(W-total)/2;const y=H/2;
+  S.letters=chars.map((c,i)=>{
+    const w=widths[i];
+    const L={c,x:x+w/2,y,ox:x+w/2,oy:y,vx:0,vy:0,w,rot:0,vr:0,s:1,sv:0};
+    x+=w+gap;return L;
+  });
+}
+function shuffle(){S.letters.forEach(L=>{L.vx+=(Math.random()-0.5)*22;L.vy+=(Math.random()-0.5)*22;L.vr+=(Math.random()-0.5)*0.3;});}
+
+/* ---------- physics ---------- */
+function step(){
+  S.t+=0.016;const m=S.mouse,F=S.force;
+  for(const L of S.letters){
+    const dx=L.x-m.x,dy=L.y-m.y,d=Math.hypot(dx,dy)||1;
+    const R=S.size*2.2;
+    if(S.mode==='pressure'){
+      const p=Math.max(0,1-d/R);
+      const target=1+p*0.9*F;
+      L.sv+=(target-L.s)*0.18;L.sv*=0.82;L.s+=L.sv;
+      // spring home
+      L.vx+=(L.ox-L.x)*0.06;L.vx*=0.86;L.x+=L.vx;
+      L.vy+=(L.oy-L.y)*0.06;L.vy*=0.86;L.y+=L.vy;
+      L.vr+=(0-L.rot)*0.08;L.vr*=0.85;L.rot+=L.vr;
+    }else if(S.mode==='repel'){
+      if(d<R){const f=(1-d/R)*14*F;L.vx+=dx/d*f;L.vy+=dy/d*f;}
+      L.vx+=(L.ox-L.x)*0.045;L.vx*=0.88;L.x+=L.vx;
+      L.vy+=(L.oy-L.y)*0.045;L.vy*=0.88;L.y+=L.vy;
+      L.vr+=((dx>0?1:-1)*Math.min(0.2,(1-d/R)*0.4*F)-L.rot)*0.06;L.vr*=0.88;L.rot+=L.vr;
+      L.s+=(1-L.s)*0.1;
+    }else if(S.mode==='gravity'){
+      L.vy+=0.55*F;
+      const floor=H*0.82;
+      if(L.y>floor){L.y=floor;L.vy*=-0.45;L.vx*=0.92;L.vr+=L.vx*0.002;}
+      if(d<R*0.7){L.vy-=8*F;L.vx+=dx/d*3*F;}
+      L.vx+=(L.ox-L.x)*0.004;L.vx*=0.985;L.x+=L.vx;L.y+=L.vy;
+      L.rot+=L.vr;L.vr*=0.99;
+      L.s+=(1-L.s)*0.1;
+    }else if(S.mode==='wave'){
+      const w=Math.sin(S.t*3+L.ox*0.012)*S.size*0.28*F;
+      const prox=Math.max(0,1-d/(R*1.4));
+      L.y+=(L.oy+w*(0.4+prox)-L.y)*0.12;
+      L.x+=(L.ox-L.x)*0.12;
+      L.rot=Math.sin(S.t*2.4+L.ox*0.02)*0.14*F*(0.5+prox);
+      L.s=1+prox*0.35*F;
+    }
+  }
+}
+
+/* ---------- render ---------- */
+function draw(){
+  const bg=getComputedStyle(document.body).getPropertyValue('--bg').trim();
+  const ink=getComputedStyle(document.body).getPropertyValue('--ink').trim();
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const L of S.letters){
+    ctx.save();ctx.translate(L.x,L.y);ctx.rotate(L.rot);ctx.scale(L.s,L.s);
+    ctx.font=`400 ${S.size}px 'Dela Gothic One',sans-serif`;
+    ctx.fillStyle=ink;ctx.fillText(L.c,0,0);ctx.restore();
+  }
+  requestAnimationFrame(()=>{step();draw();});
+}
+
+/* ---------- input ---------- */
+addEventListener('pointermove',e=>{S.mouse.x=e.clientX;S.mouse.y=e.clientY;});
+addEventListener('pointerdown',e=>{S.mouse.down=true;S.mouse.x=e.clientX;S.mouse.y=e.clientY;});
+addEventListener('pointerup',()=>S.mouse.down=false);
+addEventListener('touchmove',e=>{const t=e.touches[0];S.mouse.x=t.clientX;S.mouse.y=t.clientY;},{passive:true});
+let lastTap=0;
+cv.addEventListener('pointerdown',()=>{const n=Date.now();if(n-lastTap<350)shuffle();lastTap=n;});
+
+/* ---------- ui ---------- */
+const $=id=>document.getElementById(id);
+const sheet=$('sheet'),mask=$('mask');
+$('fab').onclick=()=>{sheet.classList.add('open');mask.classList.add('on');};
+mask.onclick=()=>{sheet.classList.remove('open');mask.classList.remove('on');};
+$('txtInput').addEventListener('input',e=>{S.text=e.target.value.toUpperCase().slice(0,24)||' ';layout();});
+$('modeRow').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;
+  document.querySelectorAll('#modeRow .chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');
+  S.mode=b.dataset.mode;if(S.mode==='gravity')shuffle();});
+$('force').addEventListener('input',e=>{S.force=+e.target.value;$('forceVal').textContent=S.force.toFixed(1);});
+$('size').addEventListener('input',e=>{S.size=+e.target.value;$('sizeVal').textContent=S.size;layout();});
+$('shuffleBtn').onclick=shuffle;
+$('pngBtn').onclick=()=>{
+  const a=document.createElement('a');a.download='typo-mo.png';a.href=cv.toDataURL('image/png');a.click();
+};
+function setLang(l){S.lang=l;document.documentElement.lang=l==='zh'?'zh-Hant':'en';
+  document.querySelectorAll('[data-en]').forEach(el=>{el.textContent=l==='zh'?el.dataset.zh:el.dataset.en;});
+  $('txtInput').placeholder=l==='zh'?'打啲嘢…':'Type something…';}
+$('langBtn').onclick=()=>setLang(S.lang==='en'?'zh':'en');
+function setTheme(t){S.theme=t;document.body.dataset.theme=t;try{localStorage.setItem('typomo-theme',t);}catch(e){}}
+$('themeBtn').onclick=()=>{const i=(THEMES.indexOf(S.theme)+1)%THEMES.length;setTheme(THEMES[i]);};
+
+/* ---------- init ---------- */
+try{const t=localStorage.getItem('typomo-theme');if(t&&THEMES.includes(t))setTheme(t);}catch(e){}
+document.fonts.ready.then(()=>{resize();layout();step();draw();});
+setLang('en');
+})();
+</script>
+</body>
+</html>
