@@ -6,7 +6,7 @@
 <title>Typo Mo — Kinetic Typography Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+TC:wght@900&family=Anton&family=Pacifico&family=Bebas+Neue&family=Zen+Tokyo+Zoo&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f4f4f5; --ink:#111; --muted:#888; --card:#fff; --line:#e4e4e7; --accent:#111;
@@ -31,7 +31,10 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Sans TC',sans-serif
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .chip{padding:8px 14px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:13px;cursor:pointer;font-family:inherit}
 .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-input[type=text]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:16px;font-family:inherit;outline:none}
+input[type=text],textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:16px;font-family:inherit;outline:none;resize:vertical}
+input[type=color]{width:44px;height:32px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px;cursor:pointer}
+.swatch{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);cursor:pointer}
+.swatch.on{border-color:var(--ink)}
 input[type=range]{width:100%;accent-color:var(--ink)}
 .lbl{font-size:12px;color:var(--muted);margin:10px 0 4px;display:flex;justify-content:space-between}
 #hint{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--muted);z-index:5;pointer-events:none;white-space:nowrap;opacity:.9}
@@ -55,7 +58,45 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 <div id="mask"></div>
 <div id="sheet">
   <h3 data-en="Text" data-zh="文字">Text</h3>
-  <input type="text" id="txtInput" value="TYPO MO" maxlength="24" placeholder="Type something…">
+  <textarea id="txtInput" rows="2" maxlength="60" placeholder="Type something…">TYPO MO</textarea>
+  <h3 data-en="Font" data-zh="字體">Font</h3>
+  <div class="row" id="fontRow">
+    <button class="chip on" data-font="'Dela Gothic One'">Dela Gothic</button>
+    <button class="chip" data-font="'Noto Sans TC'">Noto 黑體</button>
+    <button class="chip" data-font="'Anton'">Anton</button>
+    <button class="chip" data-font="'Bebas Neue'">Bebas</button>
+    <button class="chip" data-font="'Pacifico'">Pacifico</button>
+    <button class="chip" data-font="'Zen Tokyo Zoo'">Tokyo Zoo</button>
+  </div>
+  <h3 data-en="Colours" data-zh="顏色">Colours</h3>
+  <div class="lbl"><span data-en="Text colour" data-zh="文字顏色">Text colour</span></div>
+  <div class="row" id="textColorRow" style="align-items:center">
+    <input type="color" id="textColor" value="#111111">
+    <div class="swatch on" data-c="#111111" style="background:#111111"></div>
+    <div class="swatch" data-c="#ffffff" style="background:#ffffff"></div>
+    <div class="swatch" data-c="#e11d48" style="background:#e11d48"></div>
+    <div class="swatch" data-c="#2563eb" style="background:#2563eb"></div>
+    <div class="swatch" data-c="#16a34a" style="background:#16a34a"></div>
+    <div class="swatch" data-c="#f59e0b" style="background:#f59e0b"></div>
+    <div class="swatch" data-c="#a855f7" style="background:#a855f7"></div>
+  </div>
+  <div class="lbl"><span data-en="Background" data-zh="背景">Background</span><button class="chip" id="bgReset" style="padding:4px 10px;font-size:11px" data-en="theme default" data-zh="跟主題">theme default</button></div>
+  <div class="row" id="bgColorRow" style="align-items:center">
+    <input type="color" id="bgColor" value="#f4f4f5">
+    <div class="swatch" data-c="#f4f4f5" style="background:#f4f4f5"></div>
+    <div class="swatch" data-c="#ffffff" style="background:#ffffff"></div>
+    <div class="swatch" data-c="#0a0a0b" style="background:#0a0a0b"></div>
+    <div class="swatch" data-c="#fef3c7" style="background:#fef3c7"></div>
+    <div class="swatch" data-c="#dbeafe" style="background:#dbeafe"></div>
+    <div class="swatch" data-c="#fce7f3" style="background:#fce7f3"></div>
+  </div>
+  <h3 data-en="Effect" data-zh="特效">Effect</h3>
+  <div class="row" id="fxRow">
+    <button class="chip on" data-fx="none" data-en="None" data-zh="無">None</button>
+    <button class="chip" data-fx="glow" data-en="Glow" data-zh="發光">Glow</button>
+    <button class="chip" data-fx="shadow" data-en="Shadow" data-zh="陰影">Shadow</button>
+    <button class="chip" data-fx="outline" data-en="Outline" data-zh="描邊">Outline</button>
+  </div>
   <h3 data-en="Behaviour" data-zh="郁法">Behaviour</h3>
   <div class="row" id="modeRow">
     <button class="chip on" data-mode="pressure" data-en="Pressure" data-zh="壓感">Pressure</button>
@@ -83,22 +124,26 @@ function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight
 addEventListener('resize',resize);
 
 /* ---------- state ---------- */
-const S={text:'TYPO MO',mode:'pressure',force:1,size:120,lang:'en',theme:'silver',
+const S={text:'TYPO MO',mode:'pressure',force:1,size:120,lang:'en',theme:'silver',font:"'Dela Gothic One'",textColor:'#111111',bgCustom:null,fx:'none',
   mouse:{x:-9999,y:-9999,down:false},letters:[],t:0};
 const THEMES=['silver','white','black'];
 
 /* ---------- letters ---------- */
 function layout(){
-  ctx.font=`400 ${S.size}px 'Dela Gothic One',sans-serif`;
-  const chars=[...S.text];if(!chars.length)return;
-  const widths=chars.map(c=>ctx.measureText(c).width);
-  const gap=S.size*0.08;
-  const total=widths.reduce((a,b)=>a+b,0)+gap*(chars.length-1);
-  let x=(W-total)/2;const y=H/2;
-  S.letters=chars.map((c,i)=>{
-    const w=widths[i];
-    const L={c,x:x+w/2,y,ox:x+w/2,oy:y,vx:0,vy:0,w,rot:0,vr:0,s:1,sv:0};
-    x+=w+gap;return L;
+  ctx.font=`400 ${S.size}px ${S.font},sans-serif`;
+  const lines=S.text.split('\n');S.letters=[];
+  const lh=S.size*1.25,gap=S.size*0.08;
+  const totalH=lh*(lines.length-1);
+  lines.forEach((line,li)=>{
+    const chars=[...line];if(!chars.length)return;
+    const widths=chars.map(c=>ctx.measureText(c).width);
+    const total=widths.reduce((a,b)=>a+b,0)+gap*(chars.length-1);
+    let x=(W-total)/2;const y=H/2-totalH/2+li*lh;
+    chars.forEach((c,i)=>{
+      const w=widths[i];
+      S.letters.push({c,x:x+w/2,y,ox:x+w/2,oy:y,vx:0,vy:0,w,rot:0,vr:0,s:1,sv:0});
+      x+=w+gap;
+    });
   });
 }
 function shuffle(){S.letters.forEach(L=>{L.vx+=(Math.random()-0.5)*22;L.vy+=(Math.random()-0.5)*22;L.vr+=(Math.random()-0.5)*0.3;});}
@@ -144,14 +189,17 @@ function step(){
 
 /* ---------- render ---------- */
 function draw(){
-  const bg=getComputedStyle(document.body).getPropertyValue('--bg').trim();
-  const ink=getComputedStyle(document.body).getPropertyValue('--ink').trim();
+  const bg=S.bgCustom||getComputedStyle(document.body).getPropertyValue('--bg').trim();
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
   ctx.textAlign='center';ctx.textBaseline='middle';
   for(const L of S.letters){
     ctx.save();ctx.translate(L.x,L.y);ctx.rotate(L.rot);ctx.scale(L.s,L.s);
-    ctx.font=`400 ${S.size}px 'Dela Gothic One',sans-serif`;
-    ctx.fillStyle=ink;ctx.fillText(L.c,0,0);ctx.restore();
+    ctx.font=`400 ${S.size}px ${S.font},sans-serif`;
+    if(S.fx==='glow'){ctx.shadowColor=S.textColor;ctx.shadowBlur=S.size*0.35;}
+    else if(S.fx==='shadow'){ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=0;ctx.shadowOffsetY=S.size*0.08;}
+    ctx.fillStyle=S.textColor;ctx.fillText(L.c,0,0);
+    if(S.fx==='outline'){ctx.shadowBlur=0;ctx.lineWidth=Math.max(1.5,S.size*0.03);ctx.strokeStyle=S.textColor;ctx.globalAlpha=0.9;ctx.strokeText(L.c,0,0);}
+    ctx.restore();
   }
   requestAnimationFrame(()=>{step();draw();});
 }
@@ -169,12 +217,29 @@ const $=id=>document.getElementById(id);
 const sheet=$('sheet'),mask=$('mask');
 $('fab').onclick=()=>{sheet.classList.add('open');mask.classList.add('on');};
 mask.onclick=()=>{sheet.classList.remove('open');mask.classList.remove('on');};
-$('txtInput').addEventListener('input',e=>{S.text=e.target.value.toUpperCase().slice(0,24)||' ';layout();});
+$('txtInput').addEventListener('input',e=>{S.text=e.target.value.slice(0,60)||' ';layout();});
 $('modeRow').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;
   document.querySelectorAll('#modeRow .chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');
   S.mode=b.dataset.mode;if(S.mode==='gravity')shuffle();});
 $('force').addEventListener('input',e=>{S.force=+e.target.value;$('forceVal').textContent=S.force.toFixed(1);});
 $('size').addEventListener('input',e=>{S.size=+e.target.value;$('sizeVal').textContent=S.size;layout();});
+$('fontRow').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;
+  document.querySelectorAll('#fontRow .chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');
+  S.font=b.dataset.font;document.fonts.ready.then(layout);});
+function bindColorRow(rowId,inputId,key){
+  const row=$(rowId),inp=$(inputId);
+  row.addEventListener('click',e=>{const s=e.target.closest('.swatch');if(!s)return;
+    row.querySelectorAll('.swatch').forEach(x=>x.classList.remove('on'));s.classList.add('on');
+    S[key]=s.dataset.c;inp.value=s.dataset.c;});
+  inp.addEventListener('input',e=>{S[key]=e.target.value;
+    row.querySelectorAll('.swatch').forEach(x=>x.classList.remove('on'));});
+}
+bindColorRow('textColorRow','textColor','textColor');
+bindColorRow('bgColorRow','bgColor','bgCustom');
+$('bgReset').onclick=()=>{S.bgCustom=null;$('bgColorRow').querySelectorAll('.swatch').forEach(x=>x.classList.remove('on'));};
+$('fxRow').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;
+  document.querySelectorAll('#fxRow .chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');
+  S.fx=b.dataset.fx;});
 $('shuffleBtn').onclick=shuffle;
 $('pngBtn').onclick=()=>{
   const a=document.createElement('a');a.download='typo-mo.png';a.href=cv.toDataURL('image/png');a.click();
